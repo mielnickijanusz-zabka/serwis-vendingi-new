@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zgłoszenie Serwisowe — Żabka</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #f0f0f0;
+    color: #1a1a1a;
+    min-height: 100vh;
+    padding-bottom: 60px;
+  }
+
+  .header {
+    background: #fff;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px; height: 60px;
+    border-bottom: 1px solid #e8e8e8;
+    position: sticky; top: 0; z-index: 10;
+  }
+
+  .zabka-logo svg {
+    height: 28px;
+    width: auto;
+    display: block;
+  }
+
+  .lang-badge {
+    display: flex; align-items: center; gap: 6px;
+    background: #f5f5f5; border: 1px solid #e0e0e0;
+    border-radius: 99px; padding: 5px 14px;
+    font-size: 13px; font-weight: 500; color: #333; cursor: pointer;
+  }
+
+  .progress-bar { height: 3px; background: #e8e8e8; }
+  .progress-fill { height: 100%; background: #00a651; transition: width 0.4s ease; width: 5%; }
+
+  .content { max-width: 520px; margin: 0 auto; padding: 28px 16px 0; }
+
+  .page-title {
+    font-size: 22px; font-weight: 700;
+    text-align: center; margin-bottom: 20px; color: #1a1a1a;
+  }
+
+  .card {
+    background: #fff; border-radius: 16px;
+    padding: 24px; margin-bottom: 12px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+  }
+
+  .card-title {
+    font-size: 12px; font-weight: 600; color: #999;
+    text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 16px;
+  }
+
+  .field { margin-bottom: 16px; }
+  .field:last-child { margin-bottom: 0; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 480px) { .field-row { grid-template-columns: 1fr; } }
+
+  label { display: block; font-size: 13px; font-weight: 500; color: #555; margin-bottom: 6px; }
+  label .req { color: #e53e3e; margin-left: 2px; }
+  label .hint { display: block; font-size: 11.5px; font-weight: 400; color: #aaa; margin-top: 2px; line-height: 1.5; }
+
+  input[type="text"], input[type="number"], select, textarea {
+    width: 100%; background: #f7f7f7;
+    border: 1.5px solid #ebebeb; border-radius: 10px;
+    color: #1a1a1a; font-family: 'Inter', sans-serif;
+    font-size: 14px; padding: 10px 14px; outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+    appearance: none; -webkit-appearance: none;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: #00a651; background: #fff;
+    box-shadow: 0 0 0 3px rgba(0,166,81,0.1);
+  }
+  input::placeholder, textarea::placeholder { color: #c0c0c0; }
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23aaa' stroke-width='1.8' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 14px center;
+    padding-right: 36px; cursor: pointer;
+  }
+  textarea { resize: vertical; min-height: 110px; line-height: 1.6; }
+
+  .conditional-block {
+    display: none; background: #f7fdf9;
+    border: 1.5px solid #c6ead4; border-radius: 12px;
+    padding: 16px; margin-top: 14px;
+    animation: fadeIn 0.18s ease;
+  }
+  .conditional-block.visible { display: block; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:translateY(0); } }
+
+  .cond-tag {
+    display: inline-block; background: #e6f5ec; color: #00873d;
+    font-size: 11px; font-weight: 600; padding: 3px 10px;
+    border-radius: 99px; margin-bottom: 12px;
+    letter-spacing: 0.04em; text-transform: uppercase;
+  }
+
+  .radio-group { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+  .radio-option {
+    flex: 1; min-width: 110px; background: #f7f7f7;
+    border: 1.5px solid #ebebeb; border-radius: 10px;
+    padding: 10px 14px; cursor: pointer; transition: all 0.15s;
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; font-weight: 500; color: #555;
+  }
+  .radio-option input[type="radio"] { accent-color: #00a651; flex-shrink: 0; }
+  .radio-option:has(input:checked) { border-color: #00a651; background: #f0faf4; color: #00401e; }
+
+  .new-location-block {
+    display: none; background: #fffdf0;
+    border: 1.5px solid #f0d060; border-radius: 12px;
+    padding: 16px; margin-top: 14px; animation: fadeIn 0.18s ease;
+  }
+  .new-location-block.visible { display: block; }
+  .new-loc-tag {
+    display: inline-block; background: #fef9c3; color: #7a5c00;
+    font-size: 11px; font-weight: 600; padding: 3px 10px;
+    border-radius: 99px; margin-bottom: 6px;
+    letter-spacing: 0.04em; text-transform: uppercase;
+  }
+  .new-loc-hint { font-size: 12px; color: #aaa; margin-bottom: 14px; line-height: 1.5; }
+
+  .file-upload-area {
+    border: 2px dashed #e0e0e0; border-radius: 12px;
+    padding: 24px 16px; text-align: center; cursor: pointer;
+    transition: all 0.15s; position: relative; overflow: hidden; background: #f7f7f7;
+  }
+  .file-upload-area:hover, .file-upload-area.dragover { border-color: #00a651; background: #f0faf4; }
+  .file-upload-area input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .upload-icon { width: 40px; height: 40px; background: #eaeaea; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; font-size: 18px; }
+  .upload-title { font-size: 13px; font-weight: 600; color: #444; }
+  .upload-sub { font-size: 11px; color: #bbb; margin-top: 4px; }
+
+  .file-preview {
+    display: none; margin-top: 10px; background: #f0faf4;
+    border: 1px solid #c6ead4; border-radius: 10px;
+    padding: 10px 14px; font-size: 13px; align-items: center; gap: 10px;
+  }
+  .file-preview.visible { display: flex; }
+  .file-preview .file-name { flex: 1; color: #00401e; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .file-remove { background: none; border: none; color: #e53e3e; cursor: pointer; font-size: 16px; padding: 0 2px; }
+
+  .add-btn {
+    margin-top: 10px; background: none; border: 1.5px dashed #d8d8d8;
+    color: #00a651; padding: 8px 16px; border-radius: 10px; cursor: pointer;
+    font-size: 12px; font-weight: 600; font-family: 'Inter', sans-serif;
+    transition: all 0.15s; display: block;
+  }
+  .add-btn:hover { border-color: #00a651; background: #f0faf4; }
+
+  .remove-btn {
+    background: none; border: 1.5px solid #e0e0e0; color: #e53e3e;
+    padding: 9px 11px; border-radius: 10px; cursor: pointer;
+    font-size: 13px; flex-shrink: 0; transition: all 0.15s;
+  }
+  .remove-btn:hover { border-color: #e53e3e; background: #fff5f5; }
+
+  .submit-btn {
+    width: 100%; padding: 15px 24px; background: #00a651; color: #fff;
+    font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 600;
+    border: none; border-radius: 99px; cursor: pointer;
+    transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 2px 14px rgba(0,166,81,0.28);
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    margin-top: 4px;
+  }
+  .submit-btn:hover { background: #008f46; box-shadow: 0 4px 20px rgba(0,166,81,0.35); transform: translateY(-1px); }
+  .submit-btn:active { transform: translateY(0); }
+  .submit-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+
+  .submit-note { text-align: center; font-size: 11.5px; color: #bbb; margin-top: 10px; }
+
+  .toast {
+    position: fixed; bottom: 24px; left: 50%;
+    transform: translateX(-50%) translateY(16px);
+    background: #1a1a1a; color: #fff; border-radius: 12px;
+    padding: 12px 20px; font-size: 13px; font-weight: 500;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+    opacity: 0; transition: opacity 0.25s, transform 0.25s;
+    pointer-events: none; display: flex; align-items: center;
+    gap: 8px; z-index: 999; max-width: calc(100vw - 32px);
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.success { background: #00a651; }
+  .toast.error   { background: #e53e3e; }
+
+  .spinner {
+    display: inline-block; width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,0.35); border-top-color: #fff;
+    border-radius: 50%; animation: spin 0.6s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .location-info {
+    display: none; font-size: 12px; color: #00873d;
+    background: #f0faf4; border-radius: 8px;
+    padding: 7px 12px; margin-top: 10px; font-weight: 500;
+  }
+  .location-info.visible { display: block; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="zabka-logo">
+    <svg width="150" height="32" viewBox="0 0 150 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M31.7941 32C38.471 32 44.6301 29.7848 49.6054 26.043L48.9026 22.7295C44.0197 25.7638 38.1381 27.5509 31.7941 27.5509C25.4501 27.5509 19.5684 25.7638 14.6856 22.7295L13.9827 26.043C18.9581 29.7661 25.1171 32 31.7941 32ZM56.2824 11.281C59.778 11.281 60.6658 8.80512 60.6658 5.67772H64.8274C64.9199 8.91681 64.1985 11.5974 61.2022 13.1798L65.5487 20.4584V20.9052H61.1097L57.4846 14.5759C57.1147 14.7062 56.6893 14.7621 56.2269 14.7621H55.2096V20.9052H50.8261V0.502617H55.2096V11.281H56.2824ZM77.5339 9.54974C76.4982 9.08435 75.5549 8.8982 74.6671 8.93543C72.6141 9.02851 71.0419 10.1082 71.0419 13.5334C71.0419 16.6422 72.651 17.6475 74.889 17.6847C75.7028 17.7219 76.5906 17.5544 77.5339 17.3124V9.54974ZM81.8249 20.0861C79.9568 20.3653 78.3292 21.2403 75.4069 21.2589C70.783 21.3147 66.6584 19.4904 66.6584 13.5334C66.6584 8.24665 69.7102 5.36125 73.9273 5.36125C78.2552 5.36125 81.8249 7.11111 81.8249 7.11111V20.0861ZM25.635 9.54974C24.5993 9.08435 23.656 8.8982 22.7682 8.93543C20.7152 9.02851 19.143 10.1082 19.143 13.5334C19.143 16.6422 20.7522 17.6475 22.9901 17.6847C23.8039 17.7219 24.6917 17.5544 25.635 17.3124V9.54974ZM29.926 20.0861C28.058 20.3653 26.4303 21.2403 23.508 21.2589C18.8841 21.3147 14.7596 19.4904 14.7596 13.5334C14.7596 8.24665 17.8113 5.36125 22.0284 5.36125C26.3564 5.36125 29.926 7.11111 29.926 7.11111V20.0861ZM37.3798 17.3124C38.3231 17.573 39.2108 17.7219 40.0247 17.6847C42.2626 17.6475 43.8718 16.6422 43.8718 13.5334C43.8718 10.1082 42.2996 9.02851 40.2466 8.93543C39.3588 8.8982 38.397 9.15881 37.3798 9.73589V17.3124ZM33.0888 0.539848H37.4723V6.08726C38.693 5.58464 39.8952 5.36125 41.0049 5.36125C45.222 5.32402 48.2737 8.24665 48.2737 13.5334C48.2737 19.4904 44.1492 21.2216 39.5253 21.2589C36.9174 21.2775 35.2528 20.3839 33.1073 20.0489V0.539848H33.0888ZM4.54994 2.21524C4.54994 0.856311 5.5857 0 6.88039 0C8.23058 0 9.26634 0.874926 9.26634 2.21524C9.26634 3.53694 8.23058 4.37464 6.88039 4.37464C5.5857 4.37464 4.54994 3.51832 4.54994 2.21524ZM12.984 6.18034L6.36252 17.1076H12.9655V20.9424H0V20.4398L6.71393 9.34497H0.480888V5.67772H12.984V6.18034Z" fill="#006420"/>
+    </svg>
+  </div>
+  <div class="lang-badge">🇵🇱 PL</div>
+</div>
+
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+
+<div class="content">
+  <h1 class="page-title">Zgłoszenie serwisowe</h1>
+
+  <form id="serviceForm" novalidate>
+
+    <!-- LOKALIZACJA -->
+    <div class="card">
+      <div class="card-title">Lokalizacja</div>
+      <div class="field-row">
+        <div class="field">
+          <label for="mpk">MPK <span class="req">*</span></label>
+          <select id="mpk" name="mpk" required>
+            <option value="">— wybierz MPK —</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="lokalizacja">Nazwa lokalizacji <span class="req">*</span></label>
+          <select id="lokalizacja" name="lokalizacja" required>
+            <option value="">— wybierz lokalizację —</option>
+          </select>
+        </div>
+      </div>
+      <div class="location-info" id="locationInfo"></div>
+      <div class="new-location-block" id="newLocationBlock">
+        <div class="new-loc-tag">✦ Nowa lokalizacja</div>
+        <p class="new-loc-hint">Lokalizacja zostanie dodana do listy po zatwierdzeniu zgłoszenia.</p>
+        <div class="field-row">
+          <div class="field">
+            <label for="nowy_mpk">Numer MPK <span class="req">*</span></label>
+            <input type="text" id="nowy_mpk" name="nowy_mpk" placeholder="np. 1099">
+          </div>
+          <div class="field">
+            <label for="nowa_nazwa">Nazwa lokalizacji <span class="req">*</span></label>
+            <input type="text" id="nowa_nazwa" name="nowa_nazwa" placeholder="np. Warszawa Żoliborz">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- POWÓD -->
+    <div class="card">
+      <div class="card-title">Powód zgłoszenia</div>
+      <div class="field">
+        <label for="powod">Powód <span class="req">*</span></label>
+        <select id="powod" name="powod" required>
+          <option value="">— wybierz powód —</option>
+          <option value="czesci">Konieczność domówienia części (flag, popychaczy itd.)</option>
+          <option value="terminal">Problem z terminalem</option>
+          <option value="vending_nie_wydaje">Vending nie wydaje produktu</option>
+          <option value="ekran">Ekran nie działa</option>
+          <option value="produkt_winda">Produkt na/w windzie</option>
+          <option value="blędna_cena">Błędna cena</option>
+          <option value="it">Problem ze sprzętem IT</option>
+          <option value="skrzynka_klucze">Skrzynka na klucze</option>
+          <option value="awaria_windy">Awaria windy</option>
+          <option value="brak_zakupu">Brak możliwości zakupu</option>
+          <option value="inne">Inne</option>
+          <option value="brak_pradu">Brak prądu</option>
+          <option value="przerwa">Planowana przerwa w działaniu</option>
+          <option value="awaria_lodowki">Awaria lodówki</option>
+        </select>
+      </div>
+
+      <div class="conditional-block" id="block_vending">
+        <div class="cond-tag">Vending nie wydaje produktu</div>
+        <div class="field-row">
+          <div class="field">
+            <label for="numer_toru">Numer toru <span class="req">*</span></label>
+            <input type="text" id="numer_toru" name="numer_toru" placeholder="np. A3">
+          </div>
+          <div class="field">
+            <label for="nazwa_produktu_vending">Nazwa produktu <span class="req">*</span></label>
+            <input type="text" id="nazwa_produktu_vending" name="nazwa_produktu_vending" placeholder="np. Coca-Cola 0,5l">
+          </div>
+        </div>
+      </div>
+
+      <div class="conditional-block" id="block_winda">
+        <div class="cond-tag">Produkt na/w windzie</div>
+        <div class="field">
+          <label for="nazwa_produktu_winda">Nazwa produktu <span class="req">*</span></label>
+          <input type="text" id="nazwa_produktu_winda" name="nazwa_produktu_winda" placeholder="np. Woda 1,5l">
+        </div>
+        <div class="field">
+          <label>Czy produkt został usunięty? <span class="req">*</span></label>
+          <div class="radio-group">
+            <label class="radio-option"><input type="radio" name="produkt_usuniety" value="tak"> Tak, usunięty</label>
+            <label class="radio-option"><input type="radio" name="produkt_usuniety" value="nie"> Nie, nadal tam jest</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="conditional-block" id="block_lodowka">
+        <div class="cond-tag">Awaria lodówki</div>
+        <div class="field">
+          <label>Czy awaria powoduje niedostępność maszyny? <span class="req">*</span></label>
+          <div class="radio-group">
+            <label class="radio-option"><input type="radio" name="niedostepnosc_maszyny" value="tak"> Tak</label>
+            <label class="radio-option"><input type="radio" name="niedostepnosc_maszyny" value="nie"> Nie</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="conditional-block" id="block_czesci">
+        <div class="cond-tag">Konieczność domówienia części</div>
+        <div id="czesci_lista">
+          <div class="czesc-row field-row">
+            <div class="field">
+              <label>Rodzaj części <span class="req">*</span></label>
+              <input type="text" name="czesc_rodzaj[]" placeholder="np. flag, popychacz, uchwyt...">
+            </div>
+            <div class="field">
+              <label>Ilość <span class="req">*</span></label>
+              <input type="number" name="czesc_ilosc[]" placeholder="np. 5" min="1">
+            </div>
+          </div>
+        </div>
+        <button type="button" class="add-btn" id="addCzesc">+ Dodaj kolejną część</button>
+      </div>
+    </div>
+
+    <!-- OPIS -->
+    <div class="card">
+      <div class="card-title">Opis zgłoszenia</div>
+      <div class="field">
+        <label for="opis">
+          Opis <span class="req">*</span>
+          <span class="hint">Jeśli awaria nastąpiła wcześniej — podaj datę i godzinę zauważenia</span>
+        </label>
+        <textarea id="opis" name="opis" required rows="4"
+          placeholder='Opisz szczegółowo problem. Jeśli awaria nastąpiła wcześniej podaj datę i godzinę, np. "Awaria zauważona 14.04.2025 o 09:30"...'></textarea>
+      </div>
+    </div>
+
+    <!-- ZDJĘCIE -->
+    <div class="card">
+      <div class="card-title">Zdjęcie (opcjonalne)</div>
+      <div class="file-upload-area" id="dropZone">
+        <input type="file" id="zdjecie" name="zdjecie" accept="image/*,.pdf" onchange="handleFile(this)">
+        <div class="upload-icon">📎</div>
+        <div class="upload-title">Kliknij lub przeciągnij plik</div>
+        <div class="upload-sub">JPG, PNG, HEIC, PDF — maks. 10 MB</div>
+      </div>
+      <div class="file-preview" id="filePreview">
+        <span>🖼️</span>
+        <span class="file-name" id="fileName"></span>
+        <button type="button" class="file-remove" onclick="removeFile()">✕</button>
+      </div>
+    </div>
+
+    <button type="submit" class="submit-btn" id="submitBtn">Wyślij zgłoszenie</button>
+    <p class="submit-note">Zgłoszenie trafi automatycznie do systemu ClickUp</p>
+
+  </form>
+</div>
+
+<div class="toast" id="toast"><span id="toastMsg"></span></div>
+
+<script>
+const CONFIG = {
+  MAKE_WEBHOOK_URL: "https://hook.eu1.make.com/3my2n55wb36homc5fr5v5sw6s45noh9e",
+  SHEETS_CSV_URL:   "https://docs.google.com/spreadsheets/d/e/2PACX-1vQrRqAyaHK4wV71RuDywi_AXXAqlTQvzfsnHfrIMG5lsjwv7oTue6GbyK69w2B-fCCC7A_9ro3P94or/pub?output=csv",
+  USE_DEMO_DATA:    false,
+};
+
+const DEMO_SKLEPY = [
+  { mpk: "1001", nazwa: "Warszawa Mokotów" },
+  { mpk: "1002", nazwa: "Kraków Kazimierz" },
+  { mpk: "1003", nazwa: "Gdańsk Wrzeszcz" },
+  { mpk: "1004", nazwa: "Poznań Stare Miasto" },
+];
+
+let sklepy = [];
+
+async function loadSklepy() {
+  if (CONFIG.USE_DEMO_DATA) {
+    sklepy = DEMO_SKLEPY;
+  } else {
+    try {
+      const res = await fetch(CONFIG.SHEETS_CSV_URL);
+      sklepy = parseCSV(await res.text());
+    } catch { sklepy = DEMO_SKLEPY; }
+  }
+  populateDropdowns();
+  readURLParams();
+}
+
+function parseCSV(text) {
+  return text.trim().split("\n").slice(1).map(row => {
+    const c = row.split(",");
+    return { mpk: c[0]?.trim().replace(/^"|"$/g, ""), nazwa: c[1]?.trim().replace(/^"|"$/g, "") };
+  }).filter(r => r.mpk && r.nazwa);
+}
+
+function populateDropdowns() {
+  const mpkSel = document.getElementById("mpk");
+  const locSel = document.getElementById("lokalizacja");
+  mpkSel.innerHTML = '<option value="">— wybierz MPK —</option>';
+  locSel.innerHTML = '<option value="">— wybierz lokalizację —</option>';
+  [...sklepy].sort((a,b) => a.mpk.localeCompare(b.mpk)).forEach(s => mpkSel.appendChild(new Option(s.mpk, s.mpk)));
+  [...sklepy].sort((a,b) => a.nazwa.localeCompare(b.nazwa)).forEach(s => locSel.appendChild(new Option(s.nazwa, s.mpk)));
+  mpkSel.appendChild(new Option("— Nie ma na liście —", "__nowa__"));
+  locSel.appendChild(new Option("— Nie ma na liście —", "__nowa__"));
+}
+
+document.getElementById("mpk").addEventListener("change", function() { syncDropdowns(this.value); });
+document.getElementById("lokalizacja").addEventListener("change", function() { syncDropdowns(this.value); });
+
+function syncDropdowns(mpk) {
+  const newBlock = document.getElementById("newLocationBlock");
+  const nMpk = document.getElementById("nowy_mpk");
+  const nNazwa = document.getElementById("nowa_nazwa");
+  if (mpk === "__nowa__") {
+    document.getElementById("mpk").value = "__nowa__";
+    document.getElementById("lokalizacja").value = "__nowa__";
+    newBlock.classList.add("visible");
+    nMpk.required = true; nNazwa.required = true;
+  } else {
+    document.getElementById("mpk").value = mpk;
+    document.getElementById("lokalizacja").value = mpk;
+    newBlock.classList.remove("visible");
+    nMpk.required = false; nNazwa.required = false;
+    nMpk.value = ""; nNazwa.value = "";
+  }
+  document.getElementById("locationInfo").classList.remove("visible");
+  updateProgress();
+}
+
+function readURLParams() {
+  const p = new URLSearchParams(window.location.search);
+  if (p.get("mpk")) syncDropdowns(p.get("mpk"));
+  if (p.get("powod")) { document.getElementById("powod").value = p.get("powod"); handlePowodChange(p.get("powod")); }
+}
+
+document.getElementById("powod").addEventListener("change", function() { handlePowodChange(this.value); updateProgress(); });
+
+function handlePowodChange(val) {
+  ["block_vending","block_winda","block_lodowka","block_czesci"].forEach(id => document.getElementById(id).classList.remove("visible"));
+  document.querySelectorAll(".conditional-block input, .conditional-block select").forEach(el => el.required = false);
+  const map = { vending_nie_wydaje:"block_vending", produkt_winda:"block_winda", awaria_lodowki:"block_lodowka", czesci:"block_czesci" };
+  if (map[val]) {
+    const block = document.getElementById(map[val]);
+    block.classList.add("visible");
+    block.querySelectorAll("input[type='text'], input[type='number']").forEach(el => el.required = true);
+  }
+}
+
+document.getElementById("addCzesc").addEventListener("click", function() {
+  const lista = document.getElementById("czesci_lista");
+  const row = document.createElement("div");
+  row.className = "czesc-row field-row";
+  row.innerHTML = `
+    <div class="field">
+      <label>Rodzaj części <span class="req">*</span></label>
+      <input type="text" name="czesc_rodzaj[]" placeholder="np. flag, popychacz...">
+    </div>
+    <div class="field">
+      <label>Ilość <span class="req">*</span></label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="number" name="czesc_ilosc[]" placeholder="np. 5" min="1" style="flex:1">
+        <button type="button" class="remove-btn" onclick="this.closest('.czesc-row').remove()">✕</button>
+      </div>
+    </div>`;
+  lista.appendChild(row);
+});
+
+function handleFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 10*1024*1024) { showToast("error","❌ Plik za duży (maks. 10 MB)"); return; }
+  document.getElementById("fileName").textContent = file.name;
+  document.getElementById("filePreview").classList.add("visible");
+}
+function removeFile() {
+  document.getElementById("zdjecie").value = "";
+  document.getElementById("filePreview").classList.remove("visible");
+}
+const dz = document.getElementById("dropZone");
+dz.addEventListener("dragover", e => { e.preventDefault(); dz.classList.add("dragover"); });
+dz.addEventListener("dragleave", () => dz.classList.remove("dragover"));
+dz.addEventListener("drop", e => {
+  e.preventDefault(); dz.classList.remove("dragover");
+  const file = e.dataTransfer.files[0];
+  if (file) { const dt = new DataTransfer(); dt.items.add(file); document.getElementById("zdjecie").files = dt.files; handleFile(document.getElementById("zdjecie")); }
+});
+
+function updateProgress() {
+  const v = ["mpk","powod","opis"].filter(id => document.getElementById(id)?.value?.trim()).length;
+  document.getElementById("progressFill").style.width = Math.max(5, Math.round(v/3*100)) + "%";
+}
+document.querySelectorAll("input, select, textarea").forEach(el => { el.addEventListener("input", updateProgress); el.addEventListener("change", updateProgress); });
+
+document.getElementById("serviceForm").addEventListener("submit", async function(e) {
+  e.preventDefault();
+  const mpkVal    = document.getElementById("mpk").value;
+  const powod     = document.getElementById("powod").value;
+  const opis      = document.getElementById("opis").value.trim();
+  const isNowa    = mpkVal === "__nowa__";
+  const nowyMpk   = document.getElementById("nowy_mpk").value.trim();
+  const nowaNazwa = document.getElementById("nowa_nazwa").value.trim();
+
+  if (!mpkVal)              { showToast("error","⚠️ Wybierz MPK / lokalizację"); return; }
+  if (isNowa && !nowyMpk)   { showToast("error","⚠️ Wpisz numer MPK"); return; }
+  if (isNowa && !nowaNazwa) { showToast("error","⚠️ Wpisz nazwę lokalizacji"); return; }
+  if (!powod)               { showToast("error","⚠️ Wybierz powód zgłoszenia"); return; }
+  if (!opis)                { showToast("error","⚠️ Uzupełnij opis zgłoszenia"); return; }
+
+  const finalMpk   = isNowa ? nowyMpk   : mpkVal;
+  const finalNazwa = isNowa ? nowaNazwa : (sklepy.find(s => s.mpk === mpkVal)?.nazwa || "");
+
+  const btn = document.getElementById("submitBtn");
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Wysyłanie...';
+
+  const payload = {
+    mpk: finalMpk, nazwa_lokalizacji: finalNazwa, nowa_lokalizacja: isNowa,
+    powod, powod_label: document.getElementById("powod").options[document.getElementById("powod").selectedIndex].text,
+    opis, timestamp: new Date().toISOString(),
+    numer_toru: document.getElementById("numer_toru").value||null,
+    nazwa_produktu_vending: document.getElementById("nazwa_produktu_vending").value||null,
+    nazwa_produktu_winda: document.getElementById("nazwa_produktu_winda").value||null,
+    produkt_usuniety: document.querySelector('input[name="produkt_usuniety"]:checked')?.value||null,
+    niedostepnosc_maszyny: document.querySelector('input[name="niedostepnosc_maszyny"]:checked')?.value||null,
+    czesci: collectCzesci(),
+  };
+
+  const fi = document.getElementById("zdjecie");
+  if (fi.files[0]) { payload.zdjecie_nazwa = fi.files[0].name; payload.zdjecie_base64 = await toBase64(fi.files[0]); }
+
+  try {
+    const res = await fetch(CONFIG.MAKE_WEBHOOK_URL, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload) });
+    if (res.ok || res.status === 200) {
+      showToast("success","✅ Zgłoszenie wysłane pomyślnie!");
+      document.getElementById("progressFill").style.width = "100%";
+      setTimeout(() => { this.reset(); updateProgress(); }, 1800);
+    } else throw new Error();
+  } catch {
+    if (CONFIG.MAKE_WEBHOOK_URL.includes("TWOJ_WEBHOOK")) {
+      showToast("success","✅ [DEMO] Formularz działa!");
+      console.log("Payload:", payload);
+    } else showToast("error","❌ Błąd wysyłania — spróbuj ponownie");
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = "Wyślij zgłoszenie";
+    updateProgress();
+  }
+});
+
+function collectCzesci() {
+  const r = [...document.querySelectorAll('input[name="czesc_rodzaj[]"]')].map(el => el.value);
+  const i = [...document.querySelectorAll('input[name="czesc_ilosc[]"]')].map(el => el.value);
+  const out = [];
+  for (let x = 0; x < r.length; x++) if (r[x]) out.push({ rodzaj: r[x], ilosc: i[x]||"" });
+  return out.length ? out : null;
+}
+
+function toBase64(file) {
+  return new Promise((res,rej) => { const rd = new FileReader(); rd.onload = () => res(rd.result.split(",")[1]); rd.onerror = rej; rd.readAsDataURL(file); });
+}
+
+function showToast(type, msg) {
+  const t = document.getElementById("toast");
+  document.getElementById("toastMsg").textContent = msg;
+  t.className = `toast ${type} show`;
+  setTimeout(() => t.classList.remove("show"), 4000);
+}
+
+loadSklepy();
+</script>
+</body>
+</html>
